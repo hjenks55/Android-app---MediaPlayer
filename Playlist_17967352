@@ -1,0 +1,64 @@
+
+package project;
+
+/**Playlist class file for an array of playlist objects 
+ * @author Harry
+ */
+public class Playlist_17967352 {
+
+	//class fields
+	private int playlistId; // int type used for incrementing
+	
+	private String playlistName;
+	private String playlistLength;
+	private String playlistMovies; //list of movie IDs in playlist
+	
+	public static int playlistCount; //counts how many objects created
+	
+	//Accessors
+	public int getId() {
+		return playlistId;
+	}
+	
+	public String getName() {
+		return playlistName;
+	}
+	
+	public String getLength() {
+		return playlistLength;
+	}
+	
+	public String getMovies() {
+		return playlistMovies;
+	}
+	
+	public static int getCount() {
+		return playlistCount;
+	}
+	
+	
+	//Mutators
+	
+	//Converts string id argument into int
+	public void setId(String id) {
+		playlistId = Integer.parseInt(id);
+	}
+	
+	public void setName(String name) {
+		playlistName = name;
+	}
+	
+	public void setLength(String length) {
+		playlistLength = length;
+	}
+		
+	public void setMovies(String movies) {
+		playlistMovies = movies;
+	}
+	
+	public static void setCount(int count) {
+		playlistCount = count;
+	}
+	
+} // end class
+

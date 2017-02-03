@@ -1,0 +1,889 @@
+
+package project;
+
+
+import java.io.IOException;//throws exception
+import java.io.PrintWriter;
+import java.io.File;
+import java.util.Scanner;//keyboard entry
+
+/** MediaPlayer_17967352 reads txt files for a movie library and playlist. Program will read both files first and save file elements
+ * in an array of objects. Objects are then called upon for functions such as display movies/playlists, change movie details etc.
+ * Program is menu driven.
+ * 
+ * @author Harry
+ */
+public class MediaPlayer_17967352 {
+
+	static Scanner kb = new Scanner(System.in); // to be used for menuSelection int numbers, adding new movies, changing genres, changing ratings etc	
+	static Scanner scanner = new Scanner(System.in); // to avoid conflicting with Scanner 'kb' - used for searching String movies	
+	
+	/**Main method creates an array of 1000 objects for movies and playlists. Arrays will be filled depending on how many lines of data there are in
+	 * the txt files used. After creating the arrays and reading the files main method will pass objects into the main menu 
+	 * 
+	 * @param args
+	 * @throws IOException
+	 */
+	public static void main(String[] args)  throws IOException {		
+		
+		Movie_17967352[] movie = new Movie_17967352[1000];		
+		String filename = "movieLibrary.txt";// filename set as variable in case file does not exist
+		readMovieData(movie, filename);						
+		
+		Playlist_17967352[] playlist = new Playlist_17967352[1000];
+	  readPlaylistData(playlist);
+		
+		showMainMenu(movie, playlist);		
+		
+	}// end main
+
+	
+	/**readMovieData method reads the movieLibrary.txt file which contains a list of movies including id, 
+	 * title, director, writer, duration, genre, classification, release date and rating (optional) 
+	 * 
+	 * @param movie = Array of movie objects created from the class type Movie_17967352, 
+	 * maximum of 1000 objects in the array
+	 * 
+	 * @param filename = default filename ("movieLibrary.txt"), in case file cannot be found system can create a new movie library file or
+	 * use another filename
+	 * 
+	 * @return movie array to main method to be used in mainMenu
+	 * 
+	 * @throws IOException if method can't find movieLibrary.txt show error message
+	 */
+	public static Movie_17967352[] readMovieData(Movie_17967352[] movie, String filename) throws IOException {
+	//Read movieLibrary file
+			
+			File movieLibrary = new File(filename);			
+			
+			if (!movieLibrary.exists()) {
+				System.out.println("movieLibrary.txt file not found, would you like to:");
+				System.out.println("1. Create a new Movie Library file");
+				System.out.println("or");
+				System.out.println("2. Enter new file name");
+				
+				int menuSelection = kb.nextInt();
+				
+				if (menuSelection == 1) {
+					PrintWriter outFile = new PrintWriter("movieLibrary.txt");
+					outFile.close();
+					readMovieData(movie,filename);
+				}
+				
+				if (menuSelection == 2) {
+					System.out.println("New filename:");
+					filename = kb.next();
+					readMovieData(movie, filename);
+				}
+				
+				else //User input validation
+					System.out.println("Please enter a valid number");
+					readMovieData(movie, filename);
+			}
+			
+			if (movieLibrary.exists()) {
+				
+				Scanner inputFile = new Scanner(movieLibrary);
+				
+				String str;
+				String[] tokens;
+				int counter = 0;
+				
+				for (int i = 1; i < movie.length; i ++) {
+					
+					movie[i] = new Movie_17967352();
+						
+					if (inputFile.hasNext()) {
+									
+						str = inputFile.nextLine();
+						tokens = str.split(",");	
+						
+						for (int a = 0; a < tokens.length; a ++) {
+							
+							movie[i].setId(tokens[0]);
+							movie[i].setTitle(tokens[1]);
+							movie[i].setDirector(tokens[2]);
+							movie[i].setWriter(tokens[3]);
+							movie[i].setDuration(tokens[4]);
+							movie[i].setGenre(tokens[5]);
+							movie[i].setClassification(tokens[6]);
+							movie[i].setReleaseDate(tokens[7]);							
+							
+							//Check if movie object has a rating
+							if (tokens.length > 8) {
+								movie[i].setRating(tokens[8]);								
+							} 							
+						} // close for tokens.legnth	
+					} // close if inputFile.hasNext
+					
+					//Counts how many objects made
+					if (movie[i].getId() != 0) {
+						counter ++;
+					}
+				} // close for movie.length
+				
+				Movie_17967352.setCount(counter);				
+				inputFile.close(); // close file movieLibrary				
+			} // end if movieLibrary.exists
+			
+			return movie;
+	}
+	
+	/** readPlaylistData method reads playlists.txt file which contains a list of playlists including ID, name, length
+	 *  and movies which consists of a dynamic number of films included in the playlist. Method creates objects from each line of the txt file
+	 * 
+	 * @param playlist = Array of objects created from Playlist_17967352 class, maximum of 1000 objects
+	 * 
+	 * @return array of playlist objects to main method to be passed into the menu
+	 * 
+	 * @throws IOException if method cannot find playlists.txt there is simply no playlists created for the current 
+	 * library of movies
+	 */
+	public static Playlist_17967352[] readPlaylistData (Playlist_17967352[] playlist) throws IOException {
+	
+		File playlistLibrary = new File("playlists.txt");
+		
+		if (!playlistLibrary.exists()) {
+			
+			System.out.println("Sorry there are no playlists created for the current library of movies");
+		}
+		
+		if (playlistLibrary.exists()) {
+			
+			Scanner inputFile = new Scanner(playlistLibrary);
+			
+			String str;
+			String[] tokens;
+			
+			int counter = 0;
+			
+			for (int i = 1; i < playlist.length; i ++) {
+				
+				playlist[i] = new Playlist_17967352();
+								
+				if (inputFile.hasNext()) {
+					
+					str = inputFile.nextLine();
+					tokens = str.split(","); 
+					
+					for (int a = 0; a < tokens.length; a ++) {
+											
+						playlist[i].setId(tokens[0]);
+						playlist[i].setName(tokens[1]);
+						playlist[i].setLength(tokens[2]);									
+					} // end for tokens.length	
+					
+					//if playlist has a length > 0 this means there are movieIds in the playlist which need to be saved to the playlist object
+					if (playlist[i].getLength() != "0") {
+						
+						int length = Integer.parseInt(playlist[i].getLength()); 
+						
+						String movieIds = null;	
+						
+							// for how many movies are in the playlist
+							for (int b = 0, c = 3 ; b < length; b++, c++) {		
+								
+								//these 2 if statements ensures playlist.movies are not set to 'null'
+								if (movieIds!= null) {
+									
+									movieIds = movieIds + "," + tokens[c];										
+								}
+								if (movieIds == null) {
+									
+									movieIds = tokens[c];
+								}
+								
+								playlist[i].setMovies(movieIds);									
+							}	// end for b < length							
+						} // end if playlist.getLength != 0		
+				} // end if inputFile.hasNext
+				
+				//count how many playlist objects are made
+				if (playlist[i].getId() != 0) {
+					
+					counter ++;					
+				}				
+			} // end for movie.length
+			
+			Playlist_17967352.setCount(counter);
+			inputFile.close();
+		} // end if playlist.Library exists
+		
+		return playlist;
+	} // end readPlayistData method
+	
+	/**Main Menu is the top of the menu hierachy which breaks down into movies > sort movies or playlists menu. 
+	 * Main menu options include movie menu, playlists, save and exit
+	 * 
+	 * @param movie is passed into main menu from the original objects created from the txt files as well as
+	 * any updated objects (new movie, new movie genre, rating etc)
+	 * 
+	 * @param playlist is passed into main menu from original objects created from txt files as well as any 
+	 * updated objects (new playlist, new movie in playlist etc)
+	 * 
+	 * @throws IOException
+	 */
+	public static void showMainMenu(Movie_17967352[] movie, Playlist_17967352[] playlist) throws IOException {
+		
+		int menuSelection; 		
+		System.out.println("\n Please select from the menu: \n 1. Movies \n 2. Playlists \n 3. Save \n 4. Exit Program ");		
+		menuSelection = kb.nextInt();
+		
+		//menu option validation
+		while (menuSelection < 1 || menuSelection > 4){
+			System.out.println("Please enter a valid menu option: \n 1. Movies \n 2. Playlists \n 3. Save \n 4. Exit Program");
+			menuSelection = kb.nextInt();
+		}
+		
+		if (menuSelection == 1) {
+			showMovieMenu(movie, playlist);
+		}
+		if (menuSelection == 2) {
+			showPlaylistsMenu(movie, playlist);
+		}
+		if (menuSelection == 3) {
+			save(movie, playlist);
+		}
+		if (menuSelection == 4) {
+			
+			System.out.println("Are you sure you want to quit? \n 1. Yes \n 2. No");
+			
+			int menuSelection2 = kb.nextInt(); //original menuSelection was interfearing here
+			
+			if (menuSelection2 == 1) {
+				System.out.println("Goodbye");
+				System.exit(0);//exit program
+			}
+			if (menuSelection2 == 2) { 
+				showMainMenu(movie, playlist);
+			}
+		}// end if menuSelection == 4		
+	}// end main menu method
+	
+	
+	
+	/**Movie sub menu, user can display movie information, sort movies, rate movies, change movie genre, 
+	 * add a new movie to the array or exit back to main menu
+	 * 
+	 * @param movie object from Movie_17967352 array passed into here to be used to manipulate movie objects
+	 * 
+	 * @param playlist object not necessarily required for showMovieMenu sub methods, however playlists are
+	 * required to be passed back to mainMenu from here
+	 * 
+	 * @throws IOException
+	 */
+	public static void showMovieMenu(Movie_17967352[] movie, Playlist_17967352[] playlist) throws IOException {
+		
+		int menuSelection;
+		
+		System.out.println("\n Movies \n 1. Display Movies \n 2. Sort Movies \n 3. Rate Movies \n 4. Change Movie Genre \n 5. Add Movie to Library \n 6. Exit Sub-menu");
+		menuSelection = kb.nextInt();
+		
+		//1. Display Movies
+		if (menuSelection == 1) {
+			
+			//for each movie object created not entire array (1000)
+			for (int i = 1; i <= Movie_17967352.getCount(); i ++) {
+				
+				System.out.println("         Title:  " + movie[i].getTitle());
+				System.out.println("      Duration:  " + movie[i].getDuration());
+				System.out.println("         Genre:  " + movie[i].getGenre());
+				System.out.println("Classification:  " + movie[i].getClassification());
+				
+				//show movie rating if it has one
+				if (movie[i].getRating() != null) {
+					
+					System.out.println("        Rating:  " + movie[i].getRating());
+				}
+				else System.out.println("        Rating:   ");				
+				System.out.println("\n");
+			}
+			showMovieMenu(movie, playlist);			
+		}// end if menuSelction == 1
+		
+		//2. Sort movies
+		if (menuSelection == 2) {			
+			showSortMenu(movie, playlist);
+		}
+		
+		//3. Rate movies
+		if (menuSelection == 3) {
+		
+			String lookingFor;
+			System.out.println("\n Please enter the Movie Title you are looking for:");
+			lookingFor = scanner.nextLine();
+			
+			int foundAt = searchMovie(movie, lookingFor);			//passes user search input into searchMovie method
+		
+			rateMovie(movie, lookingFor, foundAt);	//After system has finished searching, pass film location into rate method
+						
+			showMovieMenu(movie, playlist);
+		}// end if menuSelection == 3
+		
+		//4. Change movie genre
+		if (menuSelection == 4) {
+			
+			String lookingFor;
+			System.out.println("\n Please enter the Movie Title you are looking for:");
+			lookingFor = scanner.nextLine();
+			
+		
+			int foundAt = searchMovie(movie, lookingFor);		//passes user search input into searchMovie method	
+		
+			changeMovieGenre(movie, lookingFor, foundAt);//After system has finished searching, pass film location into changeMovieGenre method
+			
+			showMovieMenu(movie, playlist);
+		}
+		
+		//5. Add movie to library
+		if (menuSelection == 5) {
+			
+			addMovie(movie);
+			showMovieMenu(movie, playlist);
+		}
+		
+		//6. Exit sub menu
+		if (menuSelection == 6) {			
+			showMainMenu(movie, playlist);
+		}		
+	}//end movie menu method
+	
+	
+	/**Playlist sub menu user can display playlists and select for further info, user can create a new playlist or add a movie to an existing playlist
+	 * 
+	 * @param movie needed to add to a playlist
+	 * 
+	 * @param playlist returns updated playlists
+	 * 
+	 * @return 
+	 * @throws IOException
+	 */
+	public static void showPlaylistsMenu(Movie_17967352[] movie, Playlist_17967352[] playlist) throws IOException {
+		
+		int menuSelection;
+		System.out.println("\n Playlists \n 1. Display Playlists \n 2. Create Playlist \n 3. Add Movie to Playlist \n 4. Exit Sub-menu ");
+		menuSelection = kb.nextInt();
+		
+		//1. Display Playlists
+		if (menuSelection == 1) {
+			
+			System.out.println("\nPlease select a playlist or press '0' to quit\n");
+		
+			//for each playlist object created, display playist name
+			for (int i = 1; i <= Playlist_17967352.getCount(); i ++) {
+				
+				System.out.println(i+":  " + playlist[i].getName() + "\n");												
+			}
+
+			menuSelection = kb.nextInt(); //reset menuSelection
+			
+			if (menuSelection == 0) {
+				showPlaylistsMenu(movie, playlist); 
+			}		
+			
+			int playlistId; // to store playlist index location
+			
+			//Match playlist id with menuSelection 
+			for (int i = 1; i <= Playlist_17967352.getCount(); i ++) {
+				
+				if (menuSelection == playlist[i].getId()) {					
+					playlistId = i;		
+					
+						//Match playlist movie id with movie ids
+							for (int a = 1; 1 <= Movie_17967352.getCount(); a++) {
+								
+								String id = Integer.toString(movie[a].getId());
+								
+								//Searches playlist object movie ids for matching movie object ids
+								if (playlist[playlistId].getMovies().contains(id) && movie[a].getTitle() != null) {
+																							
+									System.out.println("         Title:  " + movie[a].getTitle());
+									System.out.println("      Duration:  " + movie[a].getDuration());
+									System.out.println("         Genre:  " + movie[a].getGenre());
+									System.out.println("Classification:  " + movie[a].getClassification());
+									
+									if (movie[a].getRating() != null) {
+										
+										System.out.println("        Rating:  " + movie[a].getRating());
+									}									
+									else System.out.println("        Rating:   ");
+									
+									System.out.println("\n");
+								} // end if playlist contains
+							}// end	for movie.getcount	
+					}//end if menuselection matches playlist id
+				
+				//Exit loop to prevent crash
+				if ( i == Playlist_17967352.getCount()) {
+					showPlaylistsMenu(movie, playlist);
+				}						
+			} // for playlist.getCount
+		} // end if menuSelection == 1
+			
+		
+		//2. Create Playlist
+		if (menuSelection == 2) {			
+			createPlaylist(movie, playlist);
+			showPlaylistsMenu(movie, playlist);
+		}
+		
+		//3. Add movie to Playlist
+		if (menuSelection == 3) {
+			addMovieToPlaylist(playlist, movie);
+			showPlaylistsMenu(movie, playlist);
+		}
+		
+		//4. Exit sub menu
+		if (menuSelection == 4) {
+			showMainMenu(movie, playlist);
+		}
+	} // end playlists menu method
+	
+	
+	/**Save method. For option 3 from Main Menu, saves updated movies and playlists to new txt files,
+	 * Save method uses PrintWriter to re-write entire txt file as changes to individual movies and 
+	 * playlists may have been made as well as adding new records at the end of the file
+	 * 
+	 * @param movie array of objects to be saved
+	 * @param playlist array of objects to be saved
+	 * @throws IOException
+	 */
+	public static void save(Movie_17967352[] movie, Playlist_17967352[] playlist) throws IOException {
+		
+		//*******Save Movies**********		
+		PrintWriter outFileMovies = new PrintWriter("movieLibrary.txt");
+		
+		for (int i = 1; i <= Movie_17967352.getCount() ; i ++) {
+			
+			//save movie object in the same format as original txt file
+			outFileMovies.print(movie[i].getId() + "," +  movie[i].getTitle() + "," + movie[i].getDirector() + 
+					"," + movie[i].getWriter() + "," + movie[i].getDuration() + "," + movie[i].getGenre() + 
+					"," + movie[i].getClassification() + "," + movie[i].getReleaseDate());
+			
+			//Check if movie has a rating to be saved
+			if (movie[i].getRating() != null) {
+				outFileMovies.println("," + movie[i].getRating());
+			}
+			else outFileMovies.println("");
+		}		
+		outFileMovies.close();
+		
+		//********Save Playlists*********
+		PrintWriter outFilePlaylists = new PrintWriter("playlists.txt");
+		
+		for (int i = 1; i <= Playlist_17967352.getCount(); i ++) {
+			outFilePlaylists.print(playlist[i].getId() + "," + playlist[i].getName() + "," + playlist[i].getLength());
+			
+			//check if playlist has any movies currently
+			if (playlist[i].getMovies() != null) {
+				outFilePlaylists.println("," + playlist[i].getMovies());
+			}
+			else outFilePlaylists.println("");
+		}
+		
+		outFilePlaylists.close();
+		System.out.println("Files saved");
+		showMainMenu(movie, playlist);
+	}// close save method
+	
+	/**Sort Menu options: 
+	 * 1 - Sort movies in library alphabetically by title
+	 * 2 - Sort movies by genre
+	 * 3 - Exit sub menu
+	 * 
+	 * ******Does not function properly********* - crashes before sorting entire array, see comments
+	 * 
+	 * @param movie object in Movie_17967352 array
+	 * @param playlist object in Playlist_17967352 array
+	 * @throws IOException
+	 */
+	public static void showSortMenu(Movie_17967352[] movie, Playlist_17967352[] playlist) throws IOException {
+		
+		int menuSelection;		
+		System.out.println("\n Sort Movies\n 1. By title \n 2. By Genre \n 3. Exit Sub-menu");		
+		menuSelection = kb.nextInt();
+		
+		//1. Sort by title
+		if (menuSelection == 1) {
+			
+			int startAt;
+			int j;
+			int minIndex;
+			int temp;
+			
+			for (startAt = 1; startAt < movie.length-1; startAt++) {
+				
+				minIndex = startAt;
+				temp = movie[startAt].getId();
+				
+			//*****KNOWN ERROR******: method crashes possibly due to "10 Things I hate about you" movie title with integer
+				for (j = startAt + 1; j < movie.length; j++) {
+					
+					//if movie[2nd index] title is lower in the alphabet then movie[1st index] title
+					if (movie[j].getTitle().compareTo(movie[temp].getTitle()) < 0) {
+						System.out.println(movie[j].getTitle() + " is less then " + movie[temp].getTitle());//debugging
+						temp = movie[j].getId();
+						minIndex = j;
+						System.out.println("minIndex = " + minIndex);//debugging
+						System.out.println("temp = " + temp);//debugging
+					}
+				}
+				
+				movie[minIndex].setId(movie[startAt].getId()); 			//change index	
+				movie[startAt].setId(movie[temp].getId());
+			}// end for startAt < movie.length-1 loop
+		}//end if menuSelection ==1
+			
+		
+		//2. Sort by genre
+		if (menuSelection == 2) {
+			int startAt;
+			int j;
+			int minIndex;
+			int temp;
+			
+			for (startAt = 1; startAt < movie.length-1; startAt++) {
+				
+				minIndex = startAt;
+				temp = movie[startAt].getId();
+				
+				//******Error*****
+				for (j = startAt + 1; j < movie.length; j++) {
+					
+					//if movie[1st index] genre is lower in the alphabet then movie[2nd index] genre or they are the same
+					if (movie[j].getGenre().compareTo(movie[temp].getGenre()) < 0 ||movie[j].getGenre().compareTo(movie[temp].getGenre()) == 0  ) {						
+						System.out.println(movie[j].getGenre() + " is less then " + movie[temp].getGenre());//debugging
+						temp = movie[j].getId();
+						minIndex = j;
+						System.out.println("minIndex = " + minIndex);//debugging
+						System.out.println("temp = " + temp);//debugging
+					}
+				}
+				movie[minIndex].setId(movie[startAt].getId()); //change index
+				movie[startAt].setId(movie[temp].getId());
+			} // end for startAt < movie.length
+		}// end if menuSelection == 2
+		
+		if (menuSelection == 3) {
+			showMainMenu(movie, playlist);
+		}
+	}//end show sort menu methodd
+	
+	/**Search Movie from Movie_17967352 array by Title,
+	 * has to be exact match including all spaces and capital letters 
+	 * 
+	 * @param movie objects
+	 * @param lookingFor movie titled entered by the user
+	 * @param foundAt id index number holds location of film if found
+	 * @return foundAt to be used for later reference
+	 */
+	public static int searchMovie(Movie_17967352[] movie, String lookingFor) {
+		
+		int i = 1;
+		int foundAt = -1;
+		boolean found = false;
+		
+			while (!found && i <= Movie_17967352.getCount()) {
+								
+				if (movie[i].getTitle().equals(lookingFor)) {
+					found = true;
+					foundAt = i;
+				}// end if
+				
+				i++;			
+			}//end while
+			
+			return foundAt;
+	}
+	
+	/**Rate Movie method allows users to rate a film which may or may not already have
+	 * a rating, first user searches for film and then enters a rating from 0 - 5
+	 * only whole or half numeric numbers allowed (1, 1.5,2 , 2.5 etc)
+	 * 
+	 * @param movie
+	 * @param lookingFor - title of movie user wants to rate
+	 * @param foundAt - index of film location in array
+	 * @return new movie object including updated rating
+	 */
+	public static Movie_17967352[] rateMovie(Movie_17967352[] movie, String lookingFor, int foundAt) {
+	
+		System.out.println("\n Please select a number from 1 to 11 to rate " + lookingFor);
+
+		System.out.println("1. 	 0");
+		System.out.println("2.	 0.5");
+		System.out.println("3.	 1");
+		System.out.println("4. 	 1.5");
+		System.out.println("5. 	 2");
+		System.out.println("6. 	 2.5");
+		System.out.println("7. 	 3");
+		System.out.println("8. 	 3.5");
+		System.out.println("9. 	 4");
+		System.out.println("10. 	 4.5");
+		System.out.println("11.  	 5");
+		
+		int menuSelection = kb.nextInt();
+		
+		if (menuSelection == 1) {
+			movie[foundAt].setRating("0");
+		}
+		if (menuSelection == 2) {
+			movie[foundAt].setRating("0.5");
+		}
+		if (menuSelection == 3) {
+			movie[foundAt].setRating("1");
+		}
+		if (menuSelection == 4) {
+			movie[foundAt].setRating("1.5");
+		}
+		if (menuSelection == 5) {
+			movie[foundAt].setRating("2");
+		}
+		if (menuSelection == 6) {
+			movie[foundAt].setRating("2.5");
+		}
+		if (menuSelection == 7) {
+			movie[foundAt].setRating("3");
+		}
+		if (menuSelection == 8) {
+			movie[foundAt].setRating("3.5");
+		}
+		if (menuSelection == 9) {
+			movie[foundAt].setRating("4");
+		}
+		if (menuSelection == 10) {
+			movie[foundAt].setRating("4.5");
+		}
+		if (menuSelection == 11) {
+			movie[foundAt].setRating("5");
+		}
+		if (menuSelection < 1 || menuSelection > 11) {
+			// Validate menuSelection
+			System.out.println("Please enter a valid menu option from 1 to 11");
+			rateMovie(movie, lookingFor, foundAt);
+		}
+		
+		System.out.println("Rating = " + movie[foundAt].getRating() );
+		return movie;
+	}// end Rate movie method
+	
+	/**Change movie genre allowers users to change a films genre from 1 of 11 options
+	 * 
+	 * @param movie array 
+	 * @param lookingFor = user search input
+	 * @param foundAt = index of object location
+	 * @return movie array
+	 */
+	public static Movie_17967352[] changeMovieGenre(Movie_17967352[] movie, String lookingFor, int foundAt) {
+		
+		System.out.println("\n Please select a new genre for " + lookingFor + "\n 1. Action \n 2. Adventure \n 3. Comedy \n 4. Crime \n 5. Fantasy \n 6. Family \n 7. Romance \n 8. Horror \n 9. Drama \n 10. Sci-Fi \n 11. Thriller");
+		
+		int menuSelection3 = kb.nextInt();
+		
+		if (menuSelection3 == 1) {
+			movie[foundAt].setGenre("Action");			
+		}
+		if (menuSelection3 == 2) {
+			movie[foundAt].setGenre("Adventure");			
+		}
+		if (menuSelection3 == 3) {
+			movie[foundAt].setGenre("Comedy");			
+		}
+		if (menuSelection3 == 4) {
+			movie[foundAt].setGenre("Crime");			
+		}
+		if (menuSelection3 == 5) {
+			movie[foundAt].setGenre("Fantasy");			
+		}
+		if (menuSelection3 == 6) {
+			movie[foundAt].setGenre("Family");			
+		}
+		if (menuSelection3 == 7) {
+			movie[foundAt].setGenre("Romance");			
+		}
+		if (menuSelection3 == 8) {
+			movie[foundAt].setGenre("Horror");			
+		}
+		if (menuSelection3 == 9) {
+			movie[foundAt].setGenre("Drama");			
+		}
+		if (menuSelection3 == 10) {
+			movie[foundAt].setGenre("Sci-Fi");			
+		}
+		if (menuSelection3 == 11) {
+			movie[foundAt].setGenre("Thriller");			
+		}
+		
+		System.out.println(movie[foundAt].getGenre());
+		return movie;
+	}
+	
+	/**Add movie to array
+	 * 
+	 * @param current movie array
+	 * @return new movie array with new object
+	 */
+	public static Movie_17967352[] addMovie(Movie_17967352[] movie) {
+		
+		Scanner kb1 = new Scanner(System.in); // Needed new scanner as previous scanner was interfering here
+		
+		System.out.println("\nPlease enter the following details: \n"); // enter movie details
+		
+		System.out.println("Title:");
+		String title = kb1.nextLine();				
+		
+		System.out.println("Director:");
+		String director = kb1.nextLine();				
+		
+		System.out.println("Writer:");
+		String writer = kb1.nextLine();				
+		
+		System.out.println("Duration:");
+		String duration = kb1.nextLine();				
+		
+		System.out.println("Genre:");
+		String genre = kb1.nextLine();				
+		
+		System.out.println("Classification:");
+		String classification = kb1.nextLine();				
+				
+		System.out.println("Release Date:");
+		String releaseDate = kb1.nextLine();				
+		
+		System.out.println("Rating:");
+		String rating = kb1.nextLine();				
+		
+		System.out.println("\nConfirm details: \n");
+		System.out.println("Title: " + title);
+		System.out.println("Director: " + director);
+		System.out.println("Writer: " + writer);
+		System.out.println("Duration: " + duration);
+		System.out.println("Genre: " + genre);
+		System.out.println("Classification: " + classification);
+		System.out.println("Release Date: " + releaseDate);		
+		System.out.println("Rating: " + rating);
+		System.out.println("\n1. Yes\n2. No");
+		
+		//Confirm details
+		int menuSelection = kb1.nextInt();
+		if (menuSelection == 1) {
+			
+			Movie_17967352.setCount(Movie_17967352.getCount() + 1);	//Update count	
+			
+			int id = 	Movie_17967352.getCount();		
+			String id1 = Integer.toString(id);	
+			
+			movie[id] = new Movie_17967352();		 // create new movie object
+			
+			movie[id].setId(id1); // set details from user input
+			
+			movie[id].setTitle(title);
+			movie[id].setDirector(director);
+			movie[id].setWriter(writer);
+			movie[id].setDuration(duration);
+			movie[id].setGenre(genre);
+			movie[id].setClassification(classification);
+			movie[id].setReleaseDate(releaseDate);
+			movie[id].setRating(rating);
+		}
+		if (menuSelection == 2) {
+			addMovie(movie);
+		}
+		return movie;
+	}//end add movie method
+	
+	/**Create playlist method allows user to create a blank playlist, only set the name
+	 * 
+	 * @param movie array
+	 * @param playlist array
+	 * @return new playlist object
+	 */
+	public static Playlist_17967352[] createPlaylist(Movie_17967352[] movie, Playlist_17967352[] playlist) {
+		
+		Scanner kb2 = new Scanner(System.in); // Needed new scanner as previous scanner was interfering here
+		
+		System.out.println("\n Please enter a playlist name: "); 
+		String name = kb2.nextLine();		
+	
+		System.out.println("\nConfirm details: \n");
+		System.out.println("Playlist Name: " + name);
+		System.out.println("\n1. Yes\n2. No");
+		
+		int menuSelection = kb2.nextInt();
+		
+		if (menuSelection == 1) {
+			
+			Playlist_17967352.setCount(Playlist_17967352.getCount() + 1); //update playlist count
+			int id = Playlist_17967352.getCount();
+			String id1 = Integer.toString(id);
+			
+			playlist[id] = new Playlist_17967352(); //create new playlist object
+			
+			playlist[id].setId(id1);			
+			playlist[id].setName(name);
+			playlist[id].setLength("0"); //set default values to avoid "null" appearing in text file
+			playlist[id].setMovies("");  //set default values to avoid "null" appearing in text file
+		}
+		
+		if (menuSelection == 2) {
+			createPlaylist(movie, playlist);
+		}
+		return playlist;
+	} // end createPlaylist method
+	
+	/**Add movie to playlist method allows user to add movie to an existing playlist. 
+	 * First they will select an existing playlist from a list on the screen and then select a movie also from a list
+	 * 
+	 * @param playlist array of objects
+	 * @param movie array of objects
+	 * @return new playlist object
+	 */
+	public static Playlist_17967352[] addMovieToPlaylist(Playlist_17967352[] playlist, Movie_17967352[] movie) {
+		
+		System.out.println("Select a playlist:");
+		
+		for (int i = 1; i <= Playlist_17967352.getCount(); i++) {
+			
+			System.out.println(i + ": "+playlist[i].getName()); // display playlists
+		}
+		
+		int menuSelection = kb.nextInt(); // reset menuSelection
+		
+		//Match user input number with playlist id number
+		for (int i = 1; i <= Playlist_17967352.getCount(); i ++) {			
+			if (menuSelection == playlist[i].getId()) {
+				
+				System.out.println("Select a movie to add to playlist: " + playlist[i].getName());
+				System.out.println("\n");
+				
+				//Show all movies
+				for (int a = 1; a <= Movie_17967352.getCount(); a++) {
+					System.out.println(a +": " + movie[a].getTitle());					
+				}
+				
+				menuSelection = kb.nextInt(); //reset menuSelection
+				
+				for (int a = 1; a <= Movie_17967352.getCount(); a++) {
+				//If menuselection == movie id
+					if (menuSelection == movie[a].getId()) {
+						
+						String playlistMovie = Integer.toString(menuSelection); //convert int to string
+						playlist[i].setMovies(playlist[i].getMovies() + playlistMovie);// add playlistMovie string to existing movies
+					}			
+				}
+				int length = Integer.parseInt(playlist[i].getLength()); //convert string to int
+				length = length + 1; //how many movies are in the playlist
+				String length2 = Integer.toString(length); //convert back to string
+				playlist[i].setLength(length2);				
+			} // end if user input = playlist id
+		}	// end for playlist count
+		return playlist;
+		
+	} // end add movie to playlist method
+	
+} //end class MediaPlayer_17967352 
+
+
+
+
+
+ 

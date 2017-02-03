@@ -4,3 +4,4 @@ like itunes that has a simple menu that allows users to browse movies and playli
 Users can list these files, sort, and edit.
 
 MediaPlayer was developed on Eclipse 4.6.0
+You'll need the movieLibrary & playlists in your local directory for lists of movies and playlsits

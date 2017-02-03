@@ -1,0 +1,113 @@
+
+package project;
+
+/**Movie class file for an array of movie objects  
+ * @author Harry
+ */
+public class Movie_17967352 {
+
+
+	//class fields
+	private int movieId; //movieId type int for incrementing
+	
+	private String movieTitle;
+	private String movieDirector;
+	private String movieWriter;
+	private String movieDuration;
+	private String movieGenre;
+	private String movieClassification;
+	private String movieReleaseDate;
+	private String movieRating;
+		
+	public static int movieCount; //counts how many objects created
+	
+	//Accessors/Getters
+	public int getId() {
+		return movieId;
+	}	
+	
+	public String getTitle() {
+		return movieTitle;
+	}
+	
+	public String getDirector() {
+		return movieDirector;
+	}
+	
+	public String getWriter() {
+		return movieWriter;
+	}
+	
+	public String getDuration() {
+		return movieDuration;
+	}
+	
+	public String getGenre() {
+		return movieGenre;
+	}
+	
+	public String getClassification() {
+		return movieClassification;
+	}
+	
+	public String getReleaseDate() {
+		return movieReleaseDate;
+	}
+	
+	public String getRating() {
+		return movieRating;
+	}	
+	
+	public static int getCount() {
+		return movieCount;
+	}
+	
+	//Mutators/Setters
+	
+	//setId converts string id into int
+	public void setId(String id) {
+		movieId = Integer.parseInt(id);
+	}
+	
+	//overloaded setId method for int type
+	public void setId(int id) {
+		movieId = id;
+	}
+		
+	public void setTitle(String title) {
+		movieTitle = title;
+	}
+	
+	public void setDirector(String director) {
+		movieDirector = director ;
+	}
+	
+	public void setWriter(String writer) {
+		movieWriter = writer;
+	}
+	
+	public void setDuration(String duration) {
+		movieDuration = duration;
+	}
+	
+	public void setGenre(String genre) {
+		movieGenre = genre;
+	}
+	
+	public void setClassification(String classification) {
+		movieClassification = classification;
+	}
+	
+	public void setReleaseDate(String releaseDate) {
+		movieReleaseDate = releaseDate;
+	}
+	
+	public void setRating(String rating) {
+		movieRating = rating;
+	}
+	
+	public static void setCount (int count) {
+		movieCount = count;
+	}
+	
+}// end class file
